@@ -4,6 +4,8 @@
 #include <string.h>
 #include <time.h>
 #include <libpq-fe.h>
+
+
 //---------------------------------variables globales-------------------------------------------------------------------------                                              
 PGconn *bd;  // Variable que almacena la conexion con una BDs en postgres
 PGresult *resultado; //variables para consultas
@@ -35,23 +37,23 @@ void empty_stdin() // limpiar el buffer
 void menu_principal()//función para el menú principal
 {
    setbuf(stdin,NULL); // Limpiar
-   printf("\n\t\t    Bienvenido al administrador de provisiones 'Perez hermanos'  \t\t\n");
+   printf("\n       Bienvenido al administrador de provisiones 'Perez hermanos'  \t\t\n");
     do
     {
     // menu principal*****************************************************************************************************
-    printf("+==========================================================================+\n");   
-    printf("|                            Menu principal                                |\n");
-    printf("+==========================================================================+\n");
-    printf("|                    seleccione una opcion del menu:                       |\n");  
-    printf("|                                                                          |\n");
-	printf("| 1.-opciones para camiones            2.-opciones para viajes             |\n");
-    printf("|                                                                          |\n");
-    printf("| 3.-opciones para tiendas             4.-opciones para envios             |\n");
-    printf("|                                                                          |\n");
-    printf("| 5.-opciones para entregas            6.-consultas                        |\n");
-    printf("|                                                                          |\n");
-    printf("| 7.-Salir                                                                 |\n");
-    printf("|                                                                          |\n");
+    printf("+========================================================================+\n");   
+    printf("|                            Menu principal                              |\n");
+    printf("+========================================================================+\n");
+    printf("|                    seleccione una opcion del menu:                     |\n");  
+    printf("|                                 |                                      |\n");
+	printf("| 1.-opciones para camiones       |     2.-opciones para viajes          |\n");
+    printf("|                                 |                                      |\n");
+    printf("| 3.-opciones para tiendas        |     4.-opciones para envios          |\n");
+    printf("|                                 |                                      |\n");
+    printf("| 5.-opciones para entregas       |     6.-consultas                     |\n");
+    printf("|                                 |                                      |\n");
+    printf("| 7.-Salir                        |                                      |\n");
+    printf("|                                 |                                      |\n");
 	printf("+==========================================================================+\n");  
     printf(">> ");
     scanf("%d", &res);//scaneo la respuesta ingresada por el usuario
@@ -69,7 +71,7 @@ void menu_principal()//función para el menú principal
             break;
 
         case 3:
-            //menu_tiendas();//mando llamar a la funcion del menu tiendas
+            menu_tiendas();//mando llamar a la funcion del menu tiendas
             break;
 
         case 4:
@@ -322,6 +324,7 @@ void modifica_camiones()
                     printf("+==========================================================================+\n");  
                     printf(">> ");
                     scanf("%d",&op);
+                    system("clear");//limpio la pantalla
                     printf("\n");
 
                         switch (op)
@@ -418,18 +421,18 @@ void menu_viajes()//menú para opciones de viajes
         switch (res)
         {
         case 1:
-            alta_viajes(); //mando a llamar la funcion que da alta camiones
+            alta_viajes(); //mando a llamar la funcion que da alta 
             break;
 
         case 2:
-            baja_viajes(); //mando a llamar la funcion de baja (delete) de camiones
+            baja_viajes(); //mando a llamar la funcion de baja (delete) 
             break;
 
         case 3:
-            //Consulta_viajes();//mando llamar la funcion de consulta (select) de camiones
+            Consulta_viajes();//mando llamar la funcion de consulta (select) 
             break;
         case 4:
-            //modifica_viajes();//mando llamar la función de modificación de autos (update)
+            modifica_viajes();//mando llamar la función de modificaciónx (update)
             break;
         case 5:
             printf("\nregresando al menu principal...\n\n\n");
@@ -476,7 +479,7 @@ void alta_viajes()
         {
             printf("Conexion fallida :(\n");
         }
-}
+}//fin insercion de viajes---------------------------------------------------------------------------------------
 
 void baja_viajes()
 {
@@ -521,7 +524,375 @@ void baja_viajes()
         printf("Conexion fallida :(\n\n\n");
     }
 
-}
+}//fin funcion de baja viajes--------------------------------------------------------------------------------------------
 
+void Consulta_viajes()
+{
+        conexion();
+        if(PQstatus(bd) == CONNECTION_OK)//si hace la conexion correctamente
+        {
+            sprintf(cadena,"select * from viajes");//consulta de la tabla viajes;
+		    resultado = PQexec(bd, cadena);
+           
+		    if(resultado != NULL)
+            {
+                printf("================================================================\n");
+                printf("|                     Consulta de viajes                       |\n");
+                printf("| auto|numero de viaje                                         | \n"); 
+                printf("================================================================\n");
+                fila=PQntuples(resultado);
+                columna=PQnfields(resultado);
+                
+                for (i = 0; i < fila ; i++)
+                {
+                        for (j = 0; j < columna; j++)
+                        {
+                                
+                                printf("%s\t",PQgetvalue(resultado,i,j));
+                               
+				        }
+                
+				printf("\n\n\n");
+			   }
+               printf("================================================================\n\n\n");
+            }
 
+        }else//si no hace la cnoexion
+        {
+            printf("conexion fallida :( \n\n\n");
+        }
+    
+}//fin de consulta de vaijes---------------------------------------------------------------------------
 
+void modifica_viajes()//funcion para editar viajes (update)
+{
+    ExecStatusType status;
+    //datos de la basae de datos en varchar 
+    char idcamion[10], num_viaje[10], viajenew[10];
+
+    conexion();
+        if (PQstatus(bd) == CONNECTION_OK)//si la conexion es exitosa
+        {
+            //printf("Conexion exitosa\n\n\n");
+            printf("+==========================================================================+\n"); 
+            printf("|                Modificacion de datos de la tabla viajes                  |\n");
+            printf("+==========================================================================+\n"); 
+            Consulta_viajes();//mando llamar la consulta para verificar la placa y datos 
+            printf("ingrese el numero de viaje que desea editar: \n");
+            printf(">> ");
+            scanf("%s",num_viaje);
+            //validar si este auto existe.
+            sprintf(busqid,"select * from viajes where num_viaje = '%s' ", num_viaje );
+            printf("%s\n",busqid);
+            resultado = PQexec(bd, busqid);
+            char resp;
+                if(PQntuples (resultado)== 0)
+                {
+                    printf("\neste viaje no se encuentra en el registro :(\n\n\n");
+                }else
+                {
+                    //mando llamar la funcion de consulta para conocer el cual se va a editar
+                    Consulta_viajes();
+                do{//menu de seleccion a editar***************************************************************************
+                    printf("+==========================================================================+\n");   
+                    printf("|                        Menu de edicion de viajes                         |\n");
+                    printf("+==========================================================================+\n");
+                    printf("|                  seleccione el campo que desea editar:                   |\n");  
+                    printf("|                                                                          |\n");
+                    printf("| 1.-Id del camion         2.-num_viaje              3.-regresar           |\n");
+                    printf("|                                                                          |\n");
+                    printf("+==========================================================================+\n");  
+                    printf(">> ");
+                    scanf("%d",&op);
+                    system("clear");//limpio la pantalla
+                    printf("\n");
+
+                        switch (op)
+                        {
+                        case 1://editar id
+                        printf("ingrese el nuevo id: \n");
+                        scanf("%s",idcamion);
+                        sprintf(cadena,"update viajes set id_camion='%s' where num_viaje='%s';",idcamion , num_viaje);
+                        resultado = PQexec(bd, cadena);
+                        printf("Datos modificados \n\n\n\n");
+                       
+                        break;
+
+                        case 2://editar numero de viaje
+                        printf("ingrese el nuevo numero de viaje: \n");
+                        scanf("%s",viajenew);
+                        sprintf(cadena,"update viajes set num_viaje='%s' where num_viaje='%s';",viajenew , num_viaje);
+                        resultado = PQexec(bd, cadena);
+                        printf("Datos modificados \n\n\n\n");
+                            
+                            break;
+
+                        case 3:
+                        printf("regresando al menu anterior... \n\n\n");
+                        
+                            
+                            break;
+
+                        
+                        default:
+                            printf("No existe acción para la opción seleccionada.\n\n");
+                        }//fin switch
+                    } while (op !=3);
+                }
+
+    }
+    else
+    {
+        printf("error al conectar :( \n\n\n");
+    }
+}//fin edicion dela tabla viajes-------------------------------------------------------------------------------
+
+void menu_tiendas()
+{
+     do
+    {
+    printf("+==========================================================================+\n");   
+    printf("|                           opciones de tiendas                            |\n");
+    printf("+==========================================================================+\n");
+    printf("|                    seleccione una opcion del menu:                       |\n");  
+    printf("|                                                                          |\n");
+	printf("| 1.-Alta                2.-Baja                  3.-Consulta              |\n");
+    printf("|                                                                          |\n");
+    printf("| 4.-Modificacion        5.-Regresar                                       |\n");
+    printf("|                                                                          |\n");
+	printf("+==========================================================================+\n");  
+    printf(">> ");
+    scanf("%d", &res);//scaneo la respuesta ingresada por el usuario
+    system("clear");//limpio la pantalla
+    printf("\n");
+       
+        switch (res)
+        {
+        case 1:
+            alta_tiendas(); //mando a llamar la funcion que da alta 
+            break;
+
+        case 2:
+            baja_tiendas(); //mando a llamar la funcion de baja (delete) 
+            break;
+
+        case 3:
+            Consulta_tiendas();//mando llamar la funcion de consulta (select) 
+            break;
+        case 4:
+            modifica_tiendas();//mando llamar la función de modificación de (update)
+            break;
+        case 5:
+            printf("\nregresando al menu principal...\n\n\n");
+            break;
+
+        default:printf("seleccione una opción correcta\n");
+        }
+    } while (res != 5); 
+
+}//fin menu de tiendas-----------------------------------------------------------------------------------------
+
+void alta_tiendas()
+{
+    ExecStatusType status;
+    //datos de la base de datos en varchar y enteros
+    char tie_destino[30], direc_tienda[30],tel_tienda[12];
+   
+
+    conexion();//mando llamar la funcion conexión
+        if (PQstatus(bd) == CONNECTION_OK)//si la conexion es exitosa
+        {
+        //printf("Conexion exitosa\n\n\n");
+        printf("+==========================================================================+\n"); 
+        printf("|                  insercion de datos a la tabla tiendas                   |\n");
+        printf("+==========================================================================+\n"); 
+        printf("ingrese el id de la tienda (tx): \n");
+        scanf("%s", tie_destino);
+        empty_stdin();//limpio el buffer
+        printf("ingrese la ciudad donde se ubica la tienda: \n");
+        scanf("%s",direc_tienda);
+        empty_stdin();//limpio el buffer
+        printf("ingrese el telefono de la tienda: \n");
+        scanf("%s",tel_tienda);
+        
+        sprintf(cadena,"insert into tiendas values('%s','%s', '%s');",tie_destino,direc_tienda,tel_tienda);
+        resultado = PQexec(bd, cadena);
+        system("clear");
+            if (resultado != NULL)
+            {
+                printf("\n\n¡la tienda se agrego correctamente! \n");
+            }
+            else
+            {
+                printf("hay datos no permitidos o ingresados incorrectamente");
+            }
+
+        }else//si no hace la conexion
+        {
+            printf("Conexion fallida :(\n");
+        }
+
+}//fin de la funcion de alta de tiendas
+
+void Consulta_tiendas()
+{
+        conexion();
+        if(PQstatus(bd) == CONNECTION_OK)//si hace la conexion correctamente
+        {
+            sprintf(cadena,"select * from tiendas");//consulta de la tabla viajes;
+		    resultado = PQexec(bd, cadena);
+           
+		    if(resultado != NULL)
+            {
+                printf("================================================================\n");
+                printf("|                     Consulta de tiendas                      |\n");
+                printf("| ID | Ciudad | teléfono                                       | \n"); 
+                printf("================================================================\n");
+                fila=PQntuples(resultado);
+                columna=PQnfields(resultado);
+                
+                for (i = 0; i < fila ; i++)
+                {
+                        for (j = 0; j < columna; j++)
+                        {
+                                
+                                printf("%s\t",PQgetvalue(resultado,i,j));
+                               
+				        }
+                
+				printf("\n\n\n");
+			   }
+               printf("================================================================\n\n\n");
+            }
+
+        }else//si no hace la cnoexion
+        {
+            printf("conexion fallida :( \n\n\n");
+        }
+}//fin consulta de tiendas-----------------------------------------------------------------------------------
+
+void baja_tiendas()
+{
+ExecStatusType status;
+    char tie_destino[10]; // variable para guardar y hacer la consulta de la placa
+    conexion();
+    if (PQstatus(bd) == CONNECTION_OK)//si la conexion es exitosa
+    {
+        //printf("Conexion exitosa\n\n\n");
+        printf("+==========================================================================+\n"); 
+        printf("|               Eliminacion de datos de la tabla tiendas                  |\n");
+        printf("+==========================================================================+\n"); 
+        Consulta_tiendas();
+        printf("ingrese el id de la tienda que desea eliminar: \n");
+        printf(">> ");
+        scanf("%s",tie_destino);
+        //validar si esta tienda
+        sprintf(busqid,"select * from tiendas where tie_destino = '%s'",tie_destino);
+		resultado = PQexec(bd, busqid);
+            if(PQntuples (resultado)== 0)
+            {
+                printf("¡esta tienda NO existe el la base de datos! :(\n\n\n");
+
+            }else
+            {
+        
+                sprintf(cadena, "delete from tiendas where tie_destino = '%s';",tie_destino);
+                printf("%s\n",cadena);
+                resultado = PQexec(bd, cadena);
+                if (resultado != NULL)
+                {
+                    printf("\n\n¡la tienda elimino correctamente! \n\n\n");
+                }
+                else
+                {
+                    printf("hay datos no permitidos o ingresados incorrectamente\n\n\n");
+                }
+            }
+    }
+}//fin de la funcion para baja de tiendas------------------------------------------------------------------
+
+void modifica_tiendas()
+{
+ExecStatusType status;
+    //datos de la basae de datos en varchar 
+    char tie_destino[10],direc_tienda[30],tel_tienda[30] , idnuevo[10];
+
+    conexion();
+        if (PQstatus(bd) == CONNECTION_OK)//si la conexion es exitosa
+        {
+            //printf("Conexion exitosa\n\n\n");
+            printf("+==========================================================================+\n"); 
+            printf("|                Modificacion de datos de la tabla tiendas                 |\n");
+            printf("+==========================================================================+\n"); 
+            Consulta_tiendas();//mando llamar la consulta para verificar la placa y datos 
+            printf("ingrese el ID de la tienda que desea editar: \n");
+            printf(">> ");
+            scanf("%s",tie_destino);
+            //validar si esta tienda  existe.
+            sprintf(busqid,"select * from tiendas where tie_destino = '%s' ", tie_destino );
+            printf("%s\n",busqid);
+            resultado = PQexec(bd, busqid);
+            char resp;
+                if(PQntuples (resultado)== 0)
+                {
+                    printf("\nesta tienda no se encuentra en el registro :(\n\n\n");
+                }else
+                {
+                    //mando llamar la funcion de consulta para conocer el cual se va a editar
+                    Consulta_tiendas();
+                do{//menu de seleccion a editar***************************************************************************
+                    printf("+==========================================================================+\n");   
+                    printf("|                        Menu de edicion de tiendas                        |\n");
+                    printf("+==========================================================================+\n");
+                    printf("|                  seleccione el campo que desea editar:                   |\n");  
+                    printf("|                                                                          |\n");
+                    printf("|       1.-ID       2.-Ciudad       3.-Télefono      4.-Regresar           |\n");
+                    printf("|                                                                          |\n");
+                    printf("+==========================================================================+\n");  
+                    printf(">> ");
+                    scanf("%d",&op);
+                    system("clear");//limpio la pantalla
+                    printf("\n");
+
+                        switch (op)
+                        {
+                        case 1://editar id
+                        printf("ingrese el nuevo id: \n");
+                        scanf("%s",idnuevo);
+                        sprintf(cadena,"update tiendas set tie_destino='%s' where tie_destino='%s';",idnuevo, tie_destino);
+                        resultado = PQexec(bd, cadena);
+                        printf("Datos modificados \n\n\n\n");
+                       
+                        break;
+
+                        case 2://editar ciudad
+                        printf("ingrese la nueva ciudad: \n");
+                        scanf("%s",direc_tienda);
+                        sprintf(cadena,"update tiendas set direc_tienda='%s' where tie_destino='%s';",direc_tienda , tie_destino);
+                        resultado = PQexec(bd, cadena);
+                        printf("Datos modificados \n\n\n\n");
+                            
+                            break;
+
+                        case 3://editar telefono
+                        printf("ingrese el nuevo telefono: \n");
+                        scanf("%s",tel_tienda);
+                        sprintf(cadena,"update tiendas set tel_tienda='%s' where tie_destino='%s';",tel_tienda , tie_destino);
+                        resultado = PQexec(bd, cadena);
+                        printf("Datos modificados \n\n\n\n");
+                        
+                        
+                            break;
+
+                        case 4:
+                        printf("regresando al menu anterior... \n\n\n");
+                            break;
+
+                        
+                        default:
+                            printf("No existe acción para la opción seleccionada.\n\n");
+                        }//fin switch
+                    } while (op !=4);
+                }
+        }
+}//fin modidfica tiendas

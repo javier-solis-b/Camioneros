@@ -33,7 +33,7 @@ insert into viajes values('c3','v1');
 CREATE TABLE tiendas(
 tie_destino varchar primary key,
 direc_tienda varchar,
-tel_tienda numeric(10,2)
+tel_tienda varchar
 );
 insert into tiendas values('t1','Tapachula',962103234);
 insert into tiendas values('t2','MExical',99999999);
