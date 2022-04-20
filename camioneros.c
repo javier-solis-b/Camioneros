@@ -477,11 +477,11 @@ void alta_viajes()
             printf("Conexion fallida :(\n");
         }
 }
-//editarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+
 void baja_viajes()
 {
     ExecStatusType status;
-    char placa[10]; // variable para guardar y hacer la consulta de la placa
+    char num_viaje[10]; // variable para guardar y hacer la consulta de la placa
     conexion();
     if (PQstatus(bd) == CONNECTION_OK)//si la conexion es exitosa
     {
@@ -489,26 +489,26 @@ void baja_viajes()
         printf("+==========================================================================+\n"); 
         printf("|               Eliminacion de datos de la tabla Camiones                  |\n");
         printf("+==========================================================================+\n"); 
-        Consulta_camiones();//mando llamar la consulta para verificar  que clientes hay registrados y saber cual se va a eliminar
-        printf("ingrese la placa del auto que dese dar de baja: \n");
+        Consulta_viajes();//mando llamar la consulta para verificar  que clientes hay registrados y saber cual se va a eliminar
+        printf("ingrese el numero al cual desea dar de baja: \n");
         printf(">> ");
-        scanf("%s",placa);
-        //validar si este cliente existe.
-        sprintf(busqid,"select * from camiones where placa = '%s'", placa );
+        scanf("%s",num_viaje);
+        //validar si este viaje existe
+        sprintf(busqid,"select * from viajes where num_viaje = '%s'", num_viaje );
 		resultado = PQexec(bd, busqid);
             if(PQntuples (resultado)== 0)
             {
-                printf("¡este camion no existe el la base de datos! :(\n\n\n");
+                printf("¡este viaje no existe el la base de datos! :(\n\n\n");
 
             }else
             {
         
-                sprintf(cadena, "delete from camiones where placa = '%s';",placa);
+                sprintf(cadena, "delete from viajes where num_viaje = '%s';",num_viaje);
                 printf("%s\n",cadena);
                 resultado = PQexec(bd, cadena);
                 if (resultado != NULL)
                 {
-                    printf("\n\n¡El camión se elimino correctamente! \n\n\n");
+                    printf("\n\n¡El viaje se elimino correctamente! \n\n\n");
                 }
                 else
                 {
@@ -522,4 +522,6 @@ void baja_viajes()
     }
 
 }
+
+
 
