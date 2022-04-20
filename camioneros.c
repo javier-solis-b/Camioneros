@@ -273,46 +273,7 @@ void Consulta_camiones()
         {
             printf("conexion fallida :( \n\n\n");
         }
-    do
-    {
-    printf("+==========================================================================+\n");   
-    printf("|                          opciones de camiones                            |\n");
-    printf("+==========================================================================+\n");
-    printf("|                    seleccione una opcion del menu:                       |\n");  
-    printf("|                                                                          |\n");
-	printf("| 1.-Alta                2.-Baja                  3.-Consulta              |\n");
-    printf("|                                                                          |\n");
-    printf("| 4.-Modificacion        5.-Regresar                                       |\n");
-    printf("|                                                                          |\n");
-	printf("+==========================================================================+\n");  
-    printf(">> ");
-    scanf("%d", &res);//scaneo la respuesta ingresada por el usuario
-    system("clear");//limpio la pantalla
-    printf("\n");
-       
-        switch (res)
-        {
-        case 1:
-            alta_camiones(); //mando a llamar la funcion que da alta camiones
-            break;
-
-        case 2:
-            baja_camiones(); //mando a llamar la funcion de baja (delete) de camiones
-            break;
-
-        case 3:
-            Consulta_camiones();//mando llamar la funcion de consulta (select) de camiones
-            break;
-        case 4:
-            modifica_camiones();//mando llamar la función de modificación de autos (update)
-            break;
-        case 5:
-            printf("\nregresando al menu principal...\n\n\n");
-            break;
-
-        default:printf("seleccione una opción correcta\n");
-        }
-    } while (res != 5); 
+    
 
 }//fin consulta camiones--------------------------------------------------------------------------------------------
 
@@ -457,11 +418,11 @@ void menu_viajes()//menú para opciones de viajes
         switch (res)
         {
         case 1:
-            //alta_viajes(); //mando a llamar la funcion que da alta camiones
+            alta_viajes(); //mando a llamar la funcion que da alta camiones
             break;
 
         case 2:
-            //baja_viajes(); //mando a llamar la funcion de baja (delete) de camiones
+            baja_viajes(); //mando a llamar la funcion de baja (delete) de camiones
             break;
 
         case 3:
@@ -478,7 +439,7 @@ void menu_viajes()//menú para opciones de viajes
         }
     } while (res != 5); 
 }//fin menu viajes-------------------------------------------------------------------------------------
-/*
+
 void alta_viajes()
 {
     ExecStatusType status;
@@ -494,17 +455,17 @@ void alta_viajes()
         printf("+==========================================================================+\n"); 
         Consulta_camiones();//muestra la consulta de camiones para verificar los que está disponibles
         printf("ingrese el id del camion que hace este viaje(cx): \n");
-        scanf("%s", idcamion);
+        scanf("%s", id_camion);
         empty_stdin();//limpio el buffer
-        printf("ingrese el modelo: \n");
-        scanf("%s",modelo);
+        printf("ingrese el numero de este viaje: \n");
+        scanf("%s",num_viaje);
         
-        sprintf(cadena,"insert into camiones values('%s', '%s', '%s', %f,  %f, '%s');",idcamion, modelo, placa,volcamion,pesocamion, conductor);
+        sprintf(cadena,"insert into viajes values('%s','%s');",id_camion, num_viaje);
         resultado = PQexec(bd, cadena);
         system("clear");
             if (resultado != NULL)
             {
-                printf("\n\n¡El camion se agrego correctamente! \n");
+                printf("\n\n¡El viaje se agrego correctamente! \n");
             }
             else
             {
@@ -515,7 +476,50 @@ void alta_viajes()
         {
             printf("Conexion fallida :(\n");
         }
+}
+//editarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+void baja_viajes()
+{
+    ExecStatusType status;
+    char placa[10]; // variable para guardar y hacer la consulta de la placa
+    conexion();
+    if (PQstatus(bd) == CONNECTION_OK)//si la conexion es exitosa
+    {
+        //printf("Conexion exitosa\n\n\n");
+        printf("+==========================================================================+\n"); 
+        printf("|               Eliminacion de datos de la tabla Camiones                  |\n");
+        printf("+==========================================================================+\n"); 
+        Consulta_camiones();//mando llamar la consulta para verificar  que clientes hay registrados y saber cual se va a eliminar
+        printf("ingrese la placa del auto que dese dar de baja: \n");
+        printf(">> ");
+        scanf("%s",placa);
+        //validar si este cliente existe.
+        sprintf(busqid,"select * from camiones where placa = '%s'", placa );
+		resultado = PQexec(bd, busqid);
+            if(PQntuples (resultado)== 0)
+            {
+                printf("¡este camion no existe el la base de datos! :(\n\n\n");
+
+            }else
+            {
+        
+                sprintf(cadena, "delete from camiones where placa = '%s';",placa);
+                printf("%s\n",cadena);
+                resultado = PQexec(bd, cadena);
+                if (resultado != NULL)
+                {
+                    printf("\n\n¡El camión se elimino correctamente! \n\n\n");
+                }
+                else
+                {
+                    printf("hay datos no permitidos o ingresados incorrectamente\n\n\n");
+                }
+            }
+
+    }else//si no hace la conexion
+    {
+        printf("Conexion fallida :(\n\n\n");
+    }
 
 }
 
-*/
