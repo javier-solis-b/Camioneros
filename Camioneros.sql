@@ -12,10 +12,10 @@ vol_camion numeric(10,2) NOT NULL,
 peso_camion numeric(10,2) NOT NULL,
 conductor varchar default 'No asignado'
 );
-insert into camiones values('c1','2020','05fa',54,20,'Pablo');
-insert into camiones values('c2','2021','05fd',55,30,'Pedro');
-insert into camiones values('c3','2019','05df',52,20,'Julio');
-insert into camiones values('c4','2018','05gc',50,20,'Ana');
+insert into camiones values('c1','2020','05fa',54,20,'Pablo Maqueda');
+insert into camiones values('c2','2021','05fd',55,30,'Pedro Prado');
+insert into camiones values('c3','2019','05df',52,20,'Julio Profe');
+insert into camiones values('c4','2018','05gc',50,20,'Ana Banana');
 
 CREATE TABLE viajes(
 id_camion varchar not null,
@@ -32,42 +32,43 @@ insert into viajes values('c3','v1');
 
 CREATE TABLE tiendas(
 tie_destino varchar primary key,
+nombre_tienda varchar,
 direc_tienda varchar,
 tel_tienda varchar
 );
-insert into tiendas values('t1','Tapachula',962103234);
-insert into tiendas values('t2','MExical',99999999);
-insert into tiendas values('t3','Df', 3400000);
-insert into tiendas values('t4','Chiapas',23333333);
+insert into tiendas values('t1','Mercantil PH','Tapachula',962103234);
+insert into tiendas values('t2','AutoServicio Rapido PH','El Porvenir Mexicali',99999999);
+insert into tiendas values('t3','Colchones PH','Calle Juanisimo CDMX', 3400000);
+insert into tiendas values('t4','Abarrotes PH','5 de Febrero TapChiapas',23333333);
 
-CREATE TABLE envios(
-num_envio varchar primary key,
-vol_envio numeric(10,2),
-peso_envio numeric(10,2)
+CREATE TABLE paquetes(
+num_paquete varchar primary key,
+vol_paquete numeric(10,2),
+peso_paquete numeric(10,2)
 );
-insert into envios values('e1',15,25);
-insert into envios values('e2',14,30);
-insert into envios values('e3',10,23);
-insert into envios values('e4',20,25);
+insert into paquetes values('p1',15,25);
+insert into paquetes values('p2',14,30);
+insert into paquetes values('p3',10,23);
+insert into paquetes values('p4',20,25);
 
 CREATE TABLE detalle_entrega(
 id_entrega varchar primary key,
 id_camion varchar,
 num_viaje varchar,
-num_envio varchar unique references envios, 
+num_paquete varchar unique references envios, 
 tie_destino varchar references tiendas,
 fecha_entrega date,
 constraint detalle_entrega_fkey foreign key(id_camion,num_viaje)
 references viajes(id_camion,num_viaje) on delete no action
 );
-insert into detalle_entrega values('ie1','c1','v1','e1','t1','2020-03-23');
-insert into detalle_entrega values('ie2','c2','v1','e2','t3','2020-03-25');
-insert into detalle_entrega values('ie3','c1','v1','e3','t1','2020-03-26');
-insert into detalle_entrega values('ie4','c2','v1','e4','t2','2020-03-23');
+insert into detalle_entrega values('e1','c1','v1','p1','t1','2020-03-23');
+insert into detalle_entrega values('e2','c2','v1','p2','t3','2020-03-25');
+insert into detalle_entrega values('e3','c1','v1','p3','t1','2020-03-26');
+insert into detalle_entrega values('e4','c2','v1','p4','t2','2020-03-23');
 
 --alter table "detalle_entrega" add constraint "detalle_entrega_fkey_val" unique (num_envio);
 menu
---Administrador proovedores peres hermanos
+--Administrador proovedores Perez hermanos
 
 	--Camiones
 		--Crud
