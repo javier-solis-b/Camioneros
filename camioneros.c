@@ -13,6 +13,36 @@ PGresult *ress;
 int i,j,fila,columna;
 int res, opc, op; //variable para las respuestas del menú
 char cadena[1000],busqid[1000];;//variable(s) para las funciones de psql
+//-----------------------------------------------------------------------------------------------------
+//FUNCIONES   UWU  
+void conexion();
+void menu_principal();
+void menu_camiones();
+    void alta_camiones();
+    void baja_camiones();
+    void Consulta_camiones();
+    void modifica_camiones();
+void menu_viajes();
+    void alta_viajes();
+    void baja_viajes();
+    void Consulta_viajes();
+    void modifica_viajes();
+void menu_tiendas();
+    void alta_tiendas();
+    void baja_tiendas();
+    void Consulta_tiendas();
+    void modifica_tiendas();
+void menu_envios();
+    void alta_envios();
+    void baja_envios();
+    void Consulta_envios();
+    void modifica_envios();
+void menu_entregas();
+    void alta_entregas();
+    void baja_entregas();
+    void Consulta_entregas();
+    void modifica_entregas();
+
 //----------------------------------------------------------------------------------------------------------
 void conexion()
 {
@@ -20,7 +50,8 @@ void conexion()
 	bd=PQsetdbLogin("localhost","5432",NULL,NULL,"camioneros","postgres","1234");
 }//fin metodo de conexion
 //-------------------------------------------------------------------------------------------------------------
-int main(int argc, char *argv[]){     
+int main(int argc, char *argv[]){   
+    
 	menu_principal();//mando llamar la funcion del menu principal
     return 0;
 }//fin main-----------------------------------------------------------------------------------------------------
@@ -75,11 +106,11 @@ void menu_principal()//función para el menú principal
             break;
 
         case 4:
-            //menu_envios();//mando llamar a la funcion del menu envios
+            menu_envios();//mando llamar a la funcion del menu envios
             break;
         
         case 5:
-            //menu_entregas();//mando llamar a la funcion del menu entregas
+            menu_entregas();//mando llamar a la funcion del menu entregas
             break;
 
         case 6:
@@ -176,7 +207,7 @@ void alta_camiones()//funcion para alta(insert)
         empty_stdin();//limpio el buffer
         //ingreso la insturcción de postgresql
        // printf("%s, %s, %s, %d , %d, %s \n");
-        sprintf(cadena,"insert into camiones values('%s', '%s', '%s', %f,  %f, '%s');",idcamion, modelo, placa,volcamion,pesocamion, conductor);
+        sprintf(cadena,"insert into camiones values('%s', '%s', '%s', %.2f,  %.2f, '%s');",idcamion, modelo, placa,volcamion,pesocamion, conductor);
         resultado = PQexec(bd, cadena);
         system("clear");
             if (resultado != NULL)
@@ -291,7 +322,7 @@ void modifica_camiones()
         {
             //printf("Conexion exitosa\n\n\n");
             printf("+==========================================================================+\n"); 
-            printf("|                Modificacion de datos de la tabla camiones                   |\n");
+            printf("|                Modificacion de datos de la tabla camiones                |\n");
             printf("+==========================================================================+\n"); 
             Consulta_camiones();//mando llamar la consulta para verificar la placa y datos del auto
             printf("ingrese la placa del camion que desea editar: \n");
@@ -896,3 +927,248 @@ ExecStatusType status;
                 }
         }
 }//fin modidfica tiendas
+
+void menu_envios(){
+     do
+    {
+    printf("+==========================================================================+\n");   
+    printf("|                           Opciones de envios                             |\n");
+    printf("+==========================================================================+\n");
+    printf("|                    seleccione una opcion del menu:                       |\n");  
+    printf("|                                                                          |\n");
+    printf("| 1.-Alta                2.-Baja                  3.-Consulta              |\n");
+    printf("|                                                                          |\n");
+    printf("| 4.-Modificacion        5.-Regresar                                       |\n");
+    printf("|                                                                          |\n");
+    printf("+==========================================================================+\n");  
+    printf(">> ");
+    scanf("%d", &res);//scaneo la respuesta ingresada por el usuario
+    system("clear");//limpio la pantalla
+    printf("\n");
+       
+        switch (res)
+        {
+        case 1:
+            alta_envios(); //mando a llamar la funcion que da alta 
+            break;
+        case 2:
+            baja_envios(); //mando a llamar la funcion de baja (delete) 
+            break;
+        case 3:
+            Consulta_envios();//mando llamar la funcion de consulta (select) 
+            break;
+        case 4:
+            modifica_envios();//mando llamar la función de modificación de (update)
+            break;
+        case 5:
+            printf("\nRegresando al menu principal...\n\n\n");
+            break;
+
+        default:printf("Seleccione una opción correcta porfavor\n");
+        }
+    } while (res != 5); 
+
+}//fin menu de envios---------------
+void alta_envios(){
+    ExecStatusType status;
+    //datos de la base de datos en varchar y enteros
+    char num_envio[30];
+    float vol_envio, peso_envio;
+    conexion();//mando llamar la funcion conexión
+        if (PQstatus(bd) == CONNECTION_OK)//si la conexion es exitosa
+        {
+        //printf("Conexion exitosa\n\n\n");
+        printf("+==========================================================================+\n"); 
+        printf("|                  insercion de datos a la tabla envios                    |\n");
+        printf("+==========================================================================+\n"); 
+        printf("ingrese el numero de envio:" );
+        scanf("%s", num_envio);
+        empty_stdin();//limpio el buffer
+        printf("ingrese el volumen del envio: ");
+        scanf("%f",&vol_envio);
+        empty_stdin();//limpio el buffer
+        printf("ingrese el peso del envio: ");
+        scanf("%f",&peso_envio);
+        
+        sprintf(cadena,"insert into envios values('%s','%.2f', '%.2f');",num_envio,vol_envio,peso_envio);
+        resultado = PQexec(bd, cadena);
+        system("clear");
+            if (resultado != NULL)
+            {
+                printf("\n\n¡la tienda se agrego correctamente! \n");
+            }
+            else
+            {
+                printf("hay datos no permitidos o ingresados incorrectamente");
+            }
+
+        }else//si no hace la conexion
+        {
+            printf("Conexion fallida :(\n");
+        }
+}
+
+void baja_envios(){
+    ExecStatusType status;
+    char num_envio[10]; // variable para guardar y hacer la consulta de la placa
+    conexion();
+    if (PQstatus(bd) == CONNECTION_OK)//si la conexion es exitosa
+    {
+        //printf("Conexion exitosa\n\n\n");
+        printf("+==========================================================================+\n"); 
+        printf("|               Eliminacion de datos de la tabla envios                  |\n");
+        printf("+==========================================================================+\n"); 
+        Consulta_envios();
+        printf("ingrese el numero de envio que desea eliminar: \n");
+        printf(">> ");
+        scanf("%s",num_envio);
+        //validar si esta tienda
+        sprintf(busqid,"select * from envios where num_envio = '%s'",num_envio);
+        resultado = PQexec(bd, busqid);
+            if(PQntuples (resultado)== 0)
+            {
+                printf("¡esta tienda NO existe el la base de datos! :(\n\n\n");
+
+            }else
+            {
+        
+                sprintf(cadena, "delete from envios where num_envio = '%s';",num_envio);
+                printf("%s\n",cadena);
+                resultado = PQexec(bd, cadena);
+                if (resultado != NULL)
+                {
+                    printf("\n\n¡envio eliminado correctamente! \n\n\n");
+                }
+                else
+                {
+                    printf("hay datos no permitidos o ingresados incorrectamente\n\n\n");
+                }
+            }
+}
+}
+
+void Consulta_envios(){
+     conexion();
+        if(PQstatus(bd) == CONNECTION_OK)//si hace la conexion correctamente
+        {
+            sprintf(cadena,"select * from envios");//consulta de la tabla viajes;
+            resultado = PQexec(bd, cadena);
+           
+            if(resultado != NULL)
+            {
+                printf("================================================================\n");
+                printf("|                     Consulta de envios                       |\n");
+                printf("| num_envio | vol_envio | peso_envio                           | \n"); 
+                printf("================================================================\n");
+                fila=PQntuples(resultado);
+                columna=PQnfields(resultado);
+                
+                for (i = 0; i < fila ; i++)
+                {
+                        for (j = 0; j < columna; j++)
+                        {
+                                
+                                printf("%s\t\t",PQgetvalue(resultado,i,j));
+                               
+                        }
+                
+                printf("\n\n\n");
+               }
+               printf("================================================================\n\n\n");
+            }
+
+        }else//si no hace la cnoexion
+        {
+            printf("conexion fallida :( \n\n\n");
+        }
+}
+
+void modifica_envios(){
+    ExecStatusType status;
+    //datos de la basae de datos en varchar 
+    char num_envio[10], num_envio_new[10];
+    float vol_envio_new,peso_envio_new,vol_envio, peso_envio; 
+
+    conexion();
+        if (PQstatus(bd) == CONNECTION_OK)//si la conexion es exitosa
+        {
+            //printf("Conexion exitosa\n\n\n");
+            printf("+==========================================================================+\n"); 
+            printf("|                Modificacion de datos de la tabla envios                  |\n");
+            printf("+==========================================================================+\n"); 
+            Consulta_envios();//mando llamar la consulta envios para mostrar los datos 
+            printf("ingrese el numero del envio que desea modificar: \n");
+            printf(">> ");
+            scanf("%s",num_envio);
+            //validar si esta tienda  existe.
+            sprintf(busqid,"select * from envios where num_envio = '%s' ", num_envio );
+            printf("%s\n",busqid);
+            resultado = PQexec(bd, busqid);
+            char resp;
+                if(PQntuples (resultado)== 0)
+                {
+                    printf("\nno se encuentra el numero de envio:(\n\n\n");
+                }else
+                {
+                    //mando llamar la funcion de consulta para conocer el cual se va a editar
+                    Consulta_envios();
+                do{//menu de seleccion a editar***************************************************************************
+                    printf("+==========================================================================+\n");   
+                    printf("|                        Menu de edicion de envios                         |\n");
+                    printf("+==========================================================================+\n");
+                    printf("|                  seleccione el campo que desea editar:                   |\n");  
+                    printf("|                                                                          |\n");
+                    printf("|    1.-num_envio   2.-vol_envio       3.-peso_envio      4.-Regresar      |\n");
+                    printf("|                                                                          |\n");
+                    printf("+==========================================================================+\n");  
+                    printf(">> ");
+                    scanf("%d",&op);
+                    system("clear");//limpio la pantalla
+                    printf("\n");
+
+                        switch (op)
+                        {
+                        case 1://editar id
+                        printf("ingrese el nuevo numero de envio: \n");
+                        scanf("%s",num_envio_new);
+                        sprintf(cadena,"update envios set num_envio='%s' where num_envio='%s';",num_envio_new, num_envio);
+                        resultado = PQexec(bd, cadena);
+                        memset(num_envio,0,10);
+                        strcpy(num_envio,num_envio_new);
+                        memset(num_envio_new,0,10);
+                        printf("Datos modificados \n\n\n\n");
+                        break;
+
+                        case 2://editar ciudad
+                        printf("ingrese el numero volumen de envio: \n");
+                        scanf("%f",&vol_envio_new);
+                        sprintf(cadena,"update envios set vol_envio='%f' where num_envio='%s';",vol_envio_new , num_envio);
+                        resultado = PQexec(bd, cadena);
+
+                        printf("Datos modificados \n\n\n\n");       
+                            break;
+
+                        case 3://editar telefono
+                        printf("ingrese el nuevo peso de envio: \n");
+                        scanf("%f",&peso_envio_new);
+                        sprintf(cadena,"update envios set peso_envio='%f' where num_envio='%s';",peso_envio_new , num_envio);
+                        resultado = PQexec(bd, cadena);
+                        printf("Datos modificados \n\n\n\n");
+                            break;
+
+                        case 4:
+                        printf("regresando al menu anterior... \n\n\n");
+                            break;
+
+                        
+                        default:
+                            printf("No existe acción para la opción seleccionada.\n\n");
+                        }//fin switch
+                    } while (op !=4);
+                }
+        }
+}
+
+void menu_entregas(){
+    
+}
