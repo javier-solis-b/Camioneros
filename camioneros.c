@@ -1,4 +1,9 @@
 // gcc -o camioneros camioneros.c -I /usr/include/postgresql/ -lpq
+//-------------------------------------------------------------------
+//Notas:
+//1.-editar las funciones de tiendas, se agrego el campo de nombre_tienda
+//2.-en la base de datos se cambió el nombre de envios por "paquetes", editar eso en el codigo al igual que el nombre de variables
+//________________________________________________________________________________
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
