@@ -36,16 +36,17 @@ nombre_tienda varchar,
 direc_tienda varchar,
 tel_tienda varchar
 );
-insert into tiendas values('t1','Mercantil PH','Tapachula',962103234);
-insert into tiendas values('t2','AutoServicio Rapido PH','El Porvenir Mexicali',99999999);
-insert into tiendas values('t3','Colchones PH','Calle Juanisimo CDMX', 3400000);
-insert into tiendas values('t4','Abarrotes PH','5 de Febrero TapChiapas',23333333);
+insert into tiendas values('t1','Mercantil PH','Tapachula','962103234');
+insert into tiendas values('t2','AutoServicio Rapido PH','El Porvenir Mexicali','99999999');
+insert into tiendas values('t3','Colchones PH','Calle Juanisimo CDMX', '3400000');
+insert into tiendas values('t4','Abarrotes PH','5 de Febrero TapChiapas','23333333');
 
 CREATE TABLE paquetes(
 num_paquete varchar primary key,
 vol_paquete numeric(10,2),
 peso_paquete numeric(10,2)
 );
+
 insert into paquetes values('p1',15,25);
 insert into paquetes values('p2',14,30);
 insert into paquetes values('p3',10,23);
