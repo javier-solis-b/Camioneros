@@ -56,7 +56,7 @@ CREATE TABLE detalle_entrega(
 id_entrega varchar primary key,
 id_camion varchar,
 num_viaje varchar,
-num_paquete varchar unique references envios, 
+num_paquete varchar unique references paquetes, 
 tie_destino varchar references tiendas,
 fecha_entrega date,
 constraint detalle_entrega_fkey foreign key(id_camion,num_viaje)
