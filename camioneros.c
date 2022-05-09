@@ -1,4 +1,4 @@
-// mpicc -o camioneros camioneros.c -I /usr/include/postgresql/ -lpq
+-o camioneros camioneros.c -I /usr/include/postgresql/ -lpq
 //-------------------------------------------------------------------
 //Notas:
 //1.-editar las funciones de tiendas, se agrego el campo de nombre_tienda
@@ -47,14 +47,25 @@ void menu_entregas();
     void baja_entregas();
     void Consulta_entregas();
     void modifica_entregas();
+
 void menu_consultas();
+    void tiendas_camiones_paquetes();
+    void paquetes_por_placa();
+    void tiendas_paquetes_de_peso_mayor_250();
+    void paquetes_por_tienda();
+    void consulta_viajes_mas_Ntienda();
+    void consulta_paquetesVM1300();
+    void consulta_camionCapacidad_Sup();
+    void consulta_mes_menos_viajes();
+    void consulta_mes_mas_viajes();
     void consulta_reportefinal();
+
 
 //----------------------------------------------------------------------------------------------------------
 void conexion()
 {
     //(ip_servidor,puerto_postgres,NULL,NULL,BDs,Usuario,contraseña)
-	bd=PQsetdbLogin("localhost","5432",NULL,NULL,"camioneros","postgres","1234");
+	bd=PQsetdbLogin("localhost","5433",NULL,NULL,"camioneros","postgres","1");
 }//fin metodo de conexion
 //-------------------------------------------------------------------------------------------------------------
 int main(int argc, char *argv[]){       
@@ -153,7 +164,7 @@ if(id == 0);
 
         case 4:
             tmpfin4 = MPI_Wtime();
-            menu_paquetes();//mando llamar a la funcion del menu envios
+            menu_paquetes();//mando llamar a la funcion del menu paquetes
             tmpfin4= MPI_Wtime();
             break;
         
@@ -238,7 +249,7 @@ void alta_camiones()//funcion para alta(insert)
 {
     ExecStatusType status;
     //datos de la base de datos en varchar y enteros
-    char idcamion[10], modelo[10], placa[10], conductor[40];
+    char idcamion[10], almacen_salida[10], modelo[10], placa[10], conductor[40];
     float volcamion, pesocamion;
 
     conexion();//mando llamar la funcion conexión
@@ -248,6 +259,8 @@ void alta_camiones()//funcion para alta(insert)
         printf("+==========================================================================+\n"); 
         printf("|                  insercion de datos a la tabla camiones                  |\n");
         printf("+==========================================================================+\n"); 
+        printf("ingrese el almacen de salida (ax): \n");
+        scanf("%s", almacen_salida);
         printf("ingrese el id (cx): \n");
         scanf("%s", idcamion);
         empty_stdin();//limpio el buffer
@@ -268,7 +281,7 @@ void alta_camiones()//funcion para alta(insert)
         empty_stdin();//limpio el buffer
         //ingreso la insturcción de postgresql
        // printf("%s, %s, %s, %d , %d, %s \n");
-        sprintf(cadena,"insert into camiones values('%s', '%s', '%s', %.2f,  %.2f, '%s');",idcamion, modelo, placa,volcamion,pesocamion, conductor);
+        sprintf(cadena,"insert into camiones values('%s','%s', '%s', '%s', %.2f,  %.2f, '%s');",almacen_salida,idcamion, modelo, placa,volcamion,pesocamion, conductor);
         resultado = PQexec(bd, cadena);
         system("clear");
             if (resultado != NULL)
@@ -342,10 +355,10 @@ void Consulta_camiones()
            
 		    if(resultado != NULL)
             {
-                printf("================================================================\n");
-                printf("|                     Consulta de autos                        |\n");
-                printf("|  ID  |Modelo |Placa |Volumen | Peso |Nombre del conductor    | \n");
-                printf("================================================================\n");
+                printf("==========================================================================\n");
+                printf("|                           Consulta de autos                            |\n");
+                printf("| Almacen |  ID  |Modelo |Placa |Volumen | Peso |Nombre del conductor    | \n");
+                printf("==========================================================================\n");
                 fila=PQntuples(resultado);
                 columna=PQnfields(resultado);
                 
@@ -360,7 +373,7 @@ void Consulta_camiones()
                 
 				printf("\n\n\n");
 			   }
-               printf("================================================================\n\n\n");
+               printf("==========================================================================\n\n\n");
             }
 
         }else//si no hace la conexion
@@ -376,7 +389,7 @@ void modifica_camiones()
     ExecStatusType status;
     //datos de la basae de datos en varchar y enteros
     float volcamion, pesocamion;
-    char idcamion[10], modelo[10], placa[10],conductor[40], placanew[10];
+    char idcamion[10], almacen_salida[10], modelo[10], placa[10],conductor[40], placanew[10];
 
     conexion();
         if (PQstatus(bd) == CONNECTION_OK)//si la conexion es exitosa
@@ -409,9 +422,9 @@ void modifica_camiones()
                     printf("|                                                                          |\n");
                     printf("| 1.-ID del camion         2.-Modelo              3.-Placa                 |\n");
                     printf("|                                                                          |\n");
-                    printf("| 4.-Volumen                5.-Peso               6.-Conductor             |\n");
+                    printf("| 4.-Volumen               5.-Peso                6.-Conductor             |\n");
                     printf("|                                                                          |\n");
-                    printf("| 7.-Regresar                                                              |\n");
+                    printf("| 7.-Almacen               8.-Regresar                                     |\n");
                     printf("|                                                                          |\n");
                     printf("+==========================================================================+\n");  
                     printf(">> ");
@@ -474,13 +487,21 @@ void modifica_camiones()
                             break;
 
                         case 7:
-                            printf("regresando al menu anterior...\n\n\n");
+                        printf("ingrese el nuevo almacen de salida: \n");
+                        scanf("%s",almacen_salida);
+                        sprintf(cadena,"update camiones set almacen_salida='%s' where placa='%s';",almacen_salida , placa);
+                        resultado = PQexec(bd, cadena);
+                        printf("Datos modificados \n\n\n\n");
+                            break;
+                        
+                        case 8:
+                        printf("Regresando al menu anterior... \n\n\n");
                             break;                
 
                         default:
                             printf("No existe acción para la opción seleccionada.\n\n");
                         }//fin switch
-                    } while (op !=7);
+                    } while (op !=8);
                 }
 
     }
@@ -876,7 +897,7 @@ void Consulta_tiendas()
                printf("================================================================\n\n\n");
             }
 
-        }else//si no hace la cnoexion
+        }else//si no hace la conexion
         {
             printf("conexion fallida :( \n\n\n");
         }
@@ -1310,14 +1331,14 @@ void menu_entregas(){
 void alta_entregas(){
     ExecStatusType status;
     //datos de la base de datos en varchar y enteros
-    char  id_camion[30], num_viaje[30], num_envio[30], tie_destino[30], fecha_entrega[30];
+    char  id_camion[30], num_viaje[30], num_paquete[30], tie_destino[30], fecha_entrega[30];
     char id_entrega[30];
     conexion();//mando llamar la funcion conexión
         if (PQstatus(bd) == CONNECTION_OK)//si la conexion es exitosa
         {
         //printf("Conexion exitosa\n\n\n");
         printf("+==========================================================================+\n"); 
-        printf("|                  insercion de datos a la tabla envios                    |\n");
+        printf("|                  insercion de datos a la tabla entregas                  |\n");
         printf("+==========================================================================+\n"); 
         printf("Ingrese el id de la entrega: "); scanf("%s",id_entrega); setbuf(stdin,NULL);
         sprintf(cadena,"select*from detalle_entrega where id_entrega='%s'", id_entrega);
@@ -1330,11 +1351,11 @@ void alta_entregas(){
             Consulta_viajes();
             printf("Ingresa el numero de viaje: "); scanf("%s",num_viaje);setbuf(stdin,NULL);
             Consulta_paquetes();
-            printf("ingrese el numero de envio: "); scanf("%s",num_envio);setbuf(stdin,NULL);
+            printf("ingrese el numero de paquete: "); scanf("%s",num_paquete);setbuf(stdin,NULL);
             Consulta_tiendas();
             printf("ingrese la tienda de destino: "); scanf("%s",tie_destino);setbuf(stdin,NULL);
             printf("Ingresa la fecha de la entrega(YY-MM-DD) :"); scanf("%s", fecha_entrega);setbuf(stdin,NULL);
-            sprintf(cadena, "insert into detalle_entrega(id_entrega,id_camion,num_viaje,num_envio,tie_destino,fecha_entrega) values('%s','%s','%s','%s','%s','%s');", id_entrega,id_camion,num_viaje,num_envio,tie_destino,fecha_entrega);
+            sprintf(cadena, "insert into detalle_entrega(id_entrega,id_camion,num_viaje,num_paquete,tie_destino,fecha_entrega) values('%s','%s','%s','%s','%s','%s');", id_entrega,id_camion,num_viaje,num_paquete,tie_destino,fecha_entrega);
             printf("Instruccion SQL antes de ejecutarse: %s \n",cadena);
             resultado= PQexec(bd, cadena);
             if(PQresultStatus(resultado)==PGRES_COMMAND_OK){
@@ -1399,8 +1420,8 @@ void Consulta_entregas(){
             if(resultado != NULL)
             {
                 printf("=============================================================================================\n");
-                printf("|                                      Consulta de envios                                   |\n");
-                printf("| id_entrega | id_camion |   num_viaje |     num_envio |    tie_destino |     fecha_entrega | \n"); 
+                printf("|                                      Consulta de entregas                                 |\n");
+                printf("| id_entrega | id_camion |   num_viaje |   num_paquete |    tie_destino |     fecha_entrega | \n"); 
                 printf("=============================================================================================\n");
                 fila=PQntuples(resultado);
                 columna=PQnfields(resultado);
@@ -1428,7 +1449,7 @@ void Consulta_entregas(){
 void modifica_entregas(){
     ExecStatusType status;
     char id_entrega[30];
-    char id_entrega_new[30], num_viaje_new[30], num_envio_new[30],id_camion_new[30], tie_destino_new[30], fecha_entrega_new[30];
+    char id_entrega_new[30], num_viaje_new[30], num_paquete_new[30],id_camion_new[30], tie_destino_new[30], fecha_entrega_new[30];
      conexion();
         if (PQstatus(bd) == CONNECTION_OK)//si la conexion es exitosa
         {
@@ -1437,7 +1458,7 @@ void modifica_entregas(){
             printf("+==========================================================================+\n"); 
             printf("|                Modificacion de datos de la tabla entregas                |\n");
             printf("+==========================================================================+\n"); 
-            Consulta_entregas();//mando llamar la consulta envios para mostrar los datos 
+            Consulta_entregas();//mando llamar la consulta paquetes para mostrar los datos 
             printf("ingrese el ID de entregan que desea modificar: \n");
             printf(">> ");
             scanf("%s",id_entrega);
@@ -1454,12 +1475,12 @@ void modifica_entregas(){
                     //mando llamar la funcion de consulta para conocer el cual se va a editar
                     Consulta_entregas();
                 do{//menu de seleccion a editar***************************
-                    printf("+=======================================================================================================================+\n");   
-                    printf("|                                             Menu de edicion de envios                                                |\n");
+                    printf("+======================================================================================================================+\n");   
+                    printf("|                                             Menu de edicion de entregas                                              |\n");
                     printf("+======================================================================================================================+\n");
                     printf("|                                         seleccione el campo que desea editar:                                        |\n");  
                     printf("|                                                                                                                      |\n");
-                    printf("|    1.-id_entrega   2.-id_camion       3.-num_viaje      4.-num_envio    5.-tie_destino   6.-fecha_Entrega  7.-salir  |\n");
+                    printf("|    1.-id_entrega   2.-id_camion       3.-num_viaje     4.-num_paquete   5.-tie_destino   6.-fecha_Entrega  7.-salir  |\n");
                     printf("|                                                                                                                      |\n");
                     printf("+======================================================================================================================+\n");  
                     printf(">> ");
@@ -1493,10 +1514,10 @@ void modifica_entregas(){
                         resultado = PQexec(bd, cadena);
                         printf("Datos modificados \n\n\n\n");
                             break;
-                        case 4: // edita el numero envio 
-                        printf("ingrese el nuevo numero de envio: \n");
-                        scanf("%s",num_envio_new);
-                        sprintf(cadena,"update detalle_entrega set num_envio='%s' where id_entrega='%s';",num_envio_new , id_entrega);
+                        case 4: // edita el numero paquete 
+                        printf("ingrese el nuevo numero de paquete: \n");
+                        scanf("%s",num_paquete_new);
+                        sprintf(cadena,"update detalle_entrega set num_paquete='%s' where id_entrega='%s';",num_paquete_new , id_entrega);
                         resultado = PQexec(bd, cadena);
                         printf("Datos modificados \n\n\n\n");
                             break;
@@ -1534,20 +1555,22 @@ void menu_consultas(){
     
     do{
     printf("+=====================================================================================================================================+\n");   
-    printf("|                              Datos a consultar                                                                                      |\n");
+    printf("|                                                DATOS A CONSULTAR EN EL SISTEMA                                                      |\n");
     printf("+=====================================================================================================================================+\n");
-    printf("|                    seleccione una opcion del menu:                                                                                  |\n");  
+    printf("|                                                 seleccione una opcion del menu:                                                     |\n");  
     printf("|                                                                                                                                     |\n");
-    printf("| 1.-Camiones entregaron en tiendas     2.-Envios de camiones por placa            3.-Tiendas con envios mayor                        |\n");
+    printf("| 1.-Lista de entregas en tiendas       2.-Paquete de camiones por placa           3.-Paquetes que exceden 250k y 5000udv             |\n");
     printf("|                                                                                                                                     |\n");
-    printf("| 4.-Envios por tiendas                 5.-Camion con mas viajes                   6.-Tiendas con envios mayor a 1300pzas             |\n");
+    printf("| 4.-Paquetes por tienda                5.-Camion con más viajes segun una         6.-Tiendas con paquetes mayores a 1300udv          |\n");
+    printf("|                                          tienda especifica.                                                                         |\n"); 
     printf("|                                                                                                                                     |\n");
-    printf("| 7.-Camiones que superaron capacidad   8.-Mes con menos viajes                    9.-Mes con mas viajes                              |\n");
+    printf("| 7.-Camiones que superaron su          8.-Mes con menos viajes                    9.-Mes con mas viajes                              |\n");
+    printf("|    capacidad                                                                                                                        |\n");
     printf("|                                                                                                                                     |\n");
     printf("| 10.-Reporte final                     11.-Salir                                                                                     |\n");
     printf("|                                                                                                                                     |\n");
     printf("+=====================================================================================================================================+\n");  
-    printf(">> ");
+    printf("[1/2/3/4/5/6/7/8/9/10]>> ");
     scanf("%d", &res);//scaneo la respuesta ingresada por el usuario
 
     system("clear");//limpio la pantalla
@@ -1556,27 +1579,31 @@ void menu_consultas(){
         switch (res)
         {
         case 1:
-            
+            tiendas_camiones_paquetes();
             break;
         case 2:
-             
+             paquetes_por_placa();
             break;
         case 3:
-           
+             tiendas_paquetes_de_peso_mayor_250();
             break;
         case 4:
-            
+             paquetes_por_tienda();
             break;
         case 5:
-            
+            consulta_viajes_mas_Ntienda();            
             break;
-        case 6: 
+        case 6:
+            consulta_paquetesVM1300(); 
             break;
         case 7:
+            consulta_camionCapacidad_Sup();
             break;
         case 8:
+            consulta_mes_menos_viajes();
             break;
         case 9:
+            consulta_mes_mas_viajes();
             break;
         case 10:
             consulta_reportefinal();
@@ -1589,33 +1616,380 @@ void menu_consultas(){
         }
  
  }while(res!=11);
-            
+           
 
 }
 }
+void tiendas_camiones_paquetes(){ //Consulta 1
 
-
-void consulta_reportefinal(){
     conexion();
+    if(PQstatus(bd) == CONNECTION_OK)//si hace la conexion correctamente 
+    {   
+
+        sprintf(cadena,"select DISTINCT t.* from tiendas t, detalle_entrega d_e where d_e.tie_destino = t.tie_destino;");
+        resultado = PQexec(bd, cadena);
+           
+        if(resultado != NULL)
+        {
+           printf("\n==============================================================================\n");
+            printf("|          Consulta  tiendas a las que los camiones entregaron paquetes        |\n");
+            printf("|       T_destino           |       direc_tienda        |        Tel_tienda    | \n");
+            printf("===============================================================================\n");
+            fila=PQntuples(resultado);
+            columna=PQnfields(resultado);
+                
+            for (i = 0; i < fila ; i++)
+            {
+                for (j = 0; j < columna; j++)
+                {
+                                
+                    printf("\t\t%s\t",PQgetvalue(resultado,i,j));
+                              
+                }
+                
+                printf("\n\n\n");
+            }
+            printf("=============================================================================\n\n\n");
+        }
+
+    }else//si no hace la cnoexion
+    {
+        printf("conexion fallida :( \n\n\n");
+    }
+
+}
+void paquetes_por_placa(){ //Consulta 2
+      conexion();
     if(PQstatus(bd) == CONNECTION_OK)//si hace la conexion correctamente
     {   
-        char fecha_entregaini[30], fecha_entregafin[30]; 
-        //sprintf(cadena,"select * from camiones");
-        //resultado = PQexec(bd, cadena);
-        printf("Ingresa la fecha de inicio(YY-MM-DD) :"); scanf("%s", fecha_entregaini);setbuf(stdin,NULL);          
-        printf("Ingresa la fecha de fin(YY-MM-DD) :"); scanf("%s", fecha_entregafin);setbuf(stdin,NULL);
-        printf("\n\tEl reporte total es:");
+      char placa[30];
+        printf("Ingresa la placa del camion:"); scanf("%s",placa);setbuf(stdin,NULL);          
 
-        //sprintf(buscarCli,"select a.color, count(a.color)as cantRep from automoviles a group by a.color having count(a.num_auto) = (select max(total) from(select count(acc.num_auto)as total from accidentes acc group by acc.num_auto)t1);");
-        sprintf(cadena,"Select * from reporte_total('%s','%s') as (num_viaje varchar, id_camion varchar, fecha_entrega date, direc_tienda varchar, num_envio varchar, vol_envio numeric);", fecha_entregaini, fecha_entregafin);
+        sprintf(cadena,"select c.id_camion, e.* from detalle_entrega d_e, camiones c, paquetes e where c.placa = '%s' and c.id_camion = d_e.id_camion and d_e.num_paquete = e.num_paquete;",placa);
+        resultado = PQexec(bd, cadena);
+           
+
+            if(resultado != NULL)
+            {
+                printf("======================================================================\n");
+                printf("|   Consulta del paquete que viajó en el camión con esas placas:     |\n");
+                printf("|  ID_camion |  Num_paquete  | Vol_paquete |   Peso_paquete |        |\n");
+                printf("======================================================================\n   ");
+                fila=PQntuples(resultado);
+                columna=PQnfields(resultado);
+                
+                for (i = 0; i < fila ; i++)
+                {
+                        for (j = 0; j < columna; j++)
+                        {
+                                
+                                printf("\t%s\t",PQgetvalue(resultado,i,j));
+                               
+                        }
+                
+                printf("\n\n\n");
+               }
+               printf("============================================================================================\n\n\n");
+            }
+
+    }else//si no hace la cnoexion
+    {
+        printf("conexion fallida :( \n\n\n");
+    }
+
+
+}
+void tiendas_paquetes_de_peso_mayor_250(){ //Consulta 3
+     conexion();
+    if(PQstatus(bd) == CONNECTION_OK)//si hace la conexion correctamente
+    {   
+
+        sprintf(cadena,"select t.tie_destino, t.direc_tienda, e.num_paquete, e.vol_paquete, e.peso_paquete from tiendas t, detalle_entrega d_e, paquetes e where d_e.tie_destino = t.tie_destino and e.peso_paquete > 250 and  e.vol_paquete > 5000 and d_e.num_paquete = e.num_paquete;");
         resultado = PQexec(bd, cadena);
            
         if(resultado != NULL)
         {
            printf("\n============================================================================\n");
-            printf("|                               Consulta de autos                          |\n");
-            printf("|num_viaje |tid_camion |fecha_entrega |direc_entrega | num_envio| vol_envio| \n");
+            printf("|                     Consulta de paquetes a tiendas mayor 250kg            |\n");
+            printf("|   T_destino  | direc_tienda |   N_paquete  |  Vol_paquete | Peso_paquete  |\n");
+            printf("=============================================================================\n");
+            fila=PQntuples(resultado);
+            columna=PQnfields(resultado);
+                
+            for (i = 0; i < fila ; i++)
+            {
+                for (j = 0; j < columna; j++)
+                {
+                                
+                    printf("\t\t%s\t",PQgetvalue(resultado,i,j));
+                              
+                }
+                
+                printf("\n\n\n");
+            }
+            printf("=============================================================================\n\n\n");
+        }
+
+    }else//si no hace la conexion
+    {
+        printf("conexion fallida :( \n\n\n");
+    }
+
+}
+
+void paquetes_por_tienda(){ //Consulta 4
+    conexion();
+    if(PQstatus(bd) == CONNECTION_OK)//si hace la conexion correctamente
+    {   
+      char tie_destino[30];
+        printf("Ingresa la direc de la tienda:"); scanf("%s", tie_destino);setbuf(stdin,NULL);         
+
+        sprintf(cadena,"select d_e.id_camion,c.modelo, c.placa, c.vol_camion, c.peso_camion, c.conductor, e.num_paquete, t.direc_tienda, d_e.num_viaje from detalle_entrega d_e, tiendas t, camiones c, paquetes e where d_e.tie_destino=t.tie_destino and t.direc_tienda='%s' and d_e.id_camion = c.id_camion and d_e.num_paquete=e.num_paquete group by d_e.id_camion, c.modelo, c.placa, c.vol_camion, c.peso_camion, c.conductor, e.num_paquete, t.direc_tienda, d_e.num_viaje;",tie_destino);
+        resultado = PQexec(bd, cadena);
+           
+
+            if(resultado != NULL)
+            {
+                printf("=========================================================================================================================\n");
+                printf("|                            Consulta los paquetes entregados segun la tienda y el camión                               |\n");
+                printf("|  ID_camion | modelo | placa | vol_camion |   peso_camion | conductor| num_paquete |direc_tienda | num_viaje           |\n");
+                printf("=========================================================================================================================\n");
+                fila=PQntuples(resultado);
+                columna=PQnfields(resultado);
+                
+                for (i = 0; i < fila ; i++)
+                {
+                        for (j = 0; j < columna; j++)
+                        {
+                                
+                                printf("%s\t",PQgetvalue(resultado,i,j));
+                               
+                        }
+                
+                printf("\n\n\n");
+               }
+               printf("============================================================================================\n\n\n");
+            }
+
+    }else//si no hace la conexion
+    {
+        printf("conexion fallida :( \n\n\n");
+    }
+
+
+}
+
+void consulta_viajes_mas_Ntienda(){ //Consulta 5
+
+    conexion();
+    if(PQstatus(bd) == CONNECTION_OK)//si hace la conexion correctamente
+    {   
+        char direc_tienda[30];
+        printf("Ingresa la direc de la tienda:"); scanf("%s", direc_tienda);setbuf(stdin,NULL);          
+
+        sprintf(cadena," select d_e.id_camion,c.modelo, c.placa, c.vol_camion, c.peso_camion, c.conductor, t.direc_tienda, COUNT(d_e.id_camion)as nViajes from detalle_entrega d_e, tiendas t, camiones c where d_e.tie_destino=t.tie_destino and t.direc_tienda='%s' and d_e.id_camion = c.id_camion group by d_e.id_camion, c.modelo, c.placa, c.vol_camion, c.peso_camion, c.conductor, t.direc_tienda having count(d_e.id_camion)=(select max(total) from(select count(d_e.id_camion)as total from detalle_entrega d_e, tiendas t  where d_e.tie_destino=t.tie_destino and t.direc_tienda='%s' group by d_e.id_camion)t1);", direc_tienda, direc_tienda);
+        resultado = PQexec(bd, cadena);
+           
+
+            if(resultado != NULL)
+            {
+                printf("============================================================================================\n");
+                printf("|             Consulta de auto con mas viajes a segun la dirección de la tienda            |\n");
+                printf("|  ID |Modelo |Placa |Volumen |Peso |Conductor | Direcc tienda | Num viajes                |\n");
+                printf("============================================================================================\n   ");
+                fila=PQntuples(resultado);
+                columna=PQnfields(resultado);
+                
+                for (i = 0; i < fila ; i++)
+                {
+                        for (j = 0; j < columna; j++)
+                        {
+                                
+                                printf("%s\t",PQgetvalue(resultado,i,j));
+                               
+                        }
+                
+                printf("\n\n\n");
+               }
+               printf("============================================================================================\n\n\n");
+            }
+
+    }else//si no hace la cnoexion
+    {
+        printf("conexion fallida :( \n\n\n");
+    }
+}
+
+void consulta_paquetesVM1300(){ //Consulta 6
+
+    conexion();
+    if(PQstatus(bd) == CONNECTION_OK)//si hace la conexion correctamente
+    {   
+
+        sprintf(cadena,"select t.tie_destino,t.direc_tienda, e.num_paquete, e.vol_paquete from tiendas t, detalle_entrega d_e, paquetes e where d_e.tie_destino = t.tie_destino and e.vol_paquete > 1300 and d_e.num_paquete = e.num_paquete;");
+        resultado = PQexec(bd, cadena);
+           
+        if(resultado != NULL)
+        {
+           printf("\n===========================================================================\n");
+            printf("|         Consulta de paquetes a tiendas con un volumen mayor a 1300       |\n");
+            printf("|  T_destino |  Direc_tienda  |     N_paquete      |      Vol_paquete      | \n");
             printf("============================================================================\n");
+            fila=PQntuples(resultado);
+            columna=PQnfields(resultado);
+                
+            for (i = 0; i < fila ; i++)
+            {
+                for (j = 0; j < columna; j++)
+                {
+                                
+                    printf("\t\t%s\t",PQgetvalue(resultado,i,j));
+                              
+                }
+                
+                printf("\n\n\n");
+            }
+            printf("=============================================================================\n\n\n");
+        }
+
+    }else//si no hace la conexion
+    {
+        printf("conexion fallida :( \n\n\n");
+    }
+}
+
+void consulta_camionCapacidad_Sup(){ //Consulta 7
+
+    conexion();
+    if(PQstatus(bd) == CONNECTION_OK)//si hace la conexion correctamente
+    {   
+
+        sprintf(cadena,"select c.id_camion, c.modelo, c.peso_camion, e.num_paquete, e.peso_paquete from detalle_entrega d_e, camiones c, paquetes e where d_e.id_camion = c.id_camion and e.peso_paquete>(c.peso_camion*4) and d_e.num_paquete = e.num_paquete;");
+        resultado = PQexec(bd, cadena);
+           
+        if(resultado != NULL)
+        {
+           printf("\n=================================================================================\n");
+            printf("|                      Consultas camion que superaron su capacidad               |\n");
+            printf("|   id_camion  |    Modelo    |    peso_camion  | num_paquete   |  peso_paquete  |\n");
+            printf("==================================================================================\n");
+            fila=PQntuples(resultado);
+            columna=PQnfields(resultado);
+                
+            for (i = 0; i < fila ; i++)
+            {
+                for (j = 0; j < columna; j++)
+                {
+                                
+                    printf("\t%s\t",PQgetvalue(resultado,i,j));
+                              
+                }
+                
+                printf("\n\n\n");
+            }
+            printf("==================================================================================\n\n\n");
+        }
+
+    }else//si no hace la conexion
+    {
+        printf("conexion fallida :( \n\n\n");
+    }
+}
+
+void consulta_mes_menos_viajes(){ //Consulta 8
+    conexion();
+    if(PQstatus(bd) == CONNECTION_OK)//si hace la conexion correctamente
+    {   
+
+        sprintf(cadena,"select count (EXTRACT (MONTH from fecha_entrega)) as nViajes, EXTRACT(MONTH FROM fecha_entrega) as mes from detalle_entrega group by EXTRACT(MONTH FROM fecha_entrega) HAVING Count(EXTRACT(MONTH FROM fecha_entrega)) = (select MIN(nViajes) from (select count(EXTRACT(MONTH from d_e.fecha_entrega))as nViajes from detalle_entrega d_e group by EXTRACT(MONTH From d_e.fecha_entrega))t1);");
+        resultado = PQexec(bd, cadena);
+           
+        if(resultado != NULL)
+        {
+           printf("\n=============================================================\n");
+            printf("|               Consulta mes con menos viajes                |\n");
+            printf("|        N_viajes           |            Mes                 | \n");
+            printf("==============================================================\n");
+            fila=PQntuples(resultado);
+            columna=PQnfields(resultado);
+                
+            for (i = 0; i < fila ; i++)
+            {
+                for (j = 0; j < columna; j++)
+                {
+                                
+                    printf("\t\t%s\t",PQgetvalue(resultado,i,j));
+                              
+                }
+                
+                printf("\n\n\n");
+            }
+            printf("===============================================================\n\n\n");
+        }
+
+    }else//si no hace la conexion
+    {
+        printf("conexion fallida :( \n\n\n");
+    }
+}
+
+void consulta_mes_mas_viajes(){ //Consulta 9
+    conexion();
+    if(PQstatus(bd) == CONNECTION_OK)//si hace la conexion correctamente
+    {   
+
+        //sprintf(buscarCli,"select a.color, count(a.color)as cantRep from automoviles a group by a.color having count(a.num_auto) = (select max(total) from(select count(acc.num_auto)as total from accidentes acc group by acc.num_auto)t1);");
+        sprintf(cadena,"select count (EXTRACT (MONTH from fecha_entrega)) as nViajes, EXTRACT(MONTH FROM fecha_entrega) as mes from detalle_entrega group by EXTRACT(MONTH FROM fecha_entrega) HAVING Count(EXTRACT(MONTH FROM fecha_entrega)) = (select max(nViajes) from (select count(EXTRACT(MONTH from d_e.fecha_entrega))as nViajes from detalle_entrega d_e group by EXTRACT(MONTH From d_e.fecha_entrega))t1);");
+        resultado = PQexec(bd, cadena);
+           
+        if(resultado != NULL)
+        {
+           printf("\n=============================================================\n");
+            printf("|               Consulta mes con mas viajes                  |\n");
+            printf("|        Numero de viaje      |             Mes              | \n");
+            printf("==============================================================\n");
+            fila=PQntuples(resultado);
+            columna=PQnfields(resultado);
+                
+            for (i = 0; i < fila ; i++)
+            {
+                for (j = 0; j < columna; j++)
+                {
+                                
+                    printf("\t\t%s\t",PQgetvalue(resultado,i,j));
+                              
+                }
+                
+                printf("\n\n\n");
+            }
+            printf("===============================================================\n\n\n");
+        }
+
+    }else//si no hace la cnoexion
+    {
+        printf("conexion fallida :( \n\n\n");
+    }
+}
+
+void consulta_reportefinal(){ //Procedimiento almacenado con consulta 10
+    conexion();
+    if(PQstatus(bd) == CONNECTION_OK)//si hace la conexion correctamente
+    {   
+        char fecha_entregaini[30], fecha_entregafin[30]; 
+
+        printf("Ingresa la fecha de inicio(YY-MM-DD) :"); scanf("%s", fecha_entregaini);setbuf(stdin,NULL);          
+        printf("Ingresa la fecha de fin(YY-MM-DD) :"); scanf("%s", fecha_entregafin);setbuf(stdin,NULL);
+        printf("\n\tEl reporte total es:");
+
+        sprintf(cadena,"Select * from reporte_total('%s','%s') as (num_viaje varchar, id_camion varchar, fecha_entrega date, direc_tienda varchar, num_paquete varchar, vol_paquete numeric);", fecha_entregaini, fecha_entregafin);
+        resultado = PQexec(bd, cadena);
+           
+        if(resultado != NULL)
+        {
+           printf("\n===============================================================================\n");
+            printf("|                               Consulta de autos                              |\n");
+            printf("|num_viaje | id_camion |fecha_entrega |direc_entrega | num_paquete| vol_paquete| \n");
+            printf("================================================================================u\n");
             fila=PQntuples(resultado);
             columna=PQnfields(resultado);
                 
